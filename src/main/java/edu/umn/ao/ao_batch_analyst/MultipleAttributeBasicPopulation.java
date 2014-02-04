@@ -39,7 +39,7 @@ public class MultipleAttributeBasicPopulation implements MultipleAttributePopula
     public MultipleAttributeBasicPopulation(Collection<MultipleAttributeIndividual> individuals) {
         this.individuals = new ArrayList<MultipleAttributeIndividual>(individuals);
     }
-
+    
     public void addIndividual(MultipleAttributeIndividual individual) {
         this.individuals.add(individual);
     }

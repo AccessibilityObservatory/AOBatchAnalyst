@@ -5,7 +5,7 @@ import org.opentripplanner.analyst.batch.Individual;
 public class MultipleAttributeIndividual extends Individual {
 
 	public final int id;
-	private final double [] values;
+	public final double [] values;
 	
 	public MultipleAttributeIndividual(int id, String label, double lon, double lat, double [] values) {
 		this.id = id;

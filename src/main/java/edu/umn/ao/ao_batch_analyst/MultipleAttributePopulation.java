@@ -6,7 +6,7 @@ import org.opentripplanner.analyst.batch.Individual;
 import org.opentripplanner.analyst.batch.MultipleResultSet;
 import org.opentripplanner.analyst.batch.ResultSet;
 
-public interface MultipleAttributePopulation {
+public interface MultipleAttributePopulation extends Iterable<MultipleAttributeIndividual>{
 
     /** 
      * @return a list of all Individuals in this Population, including those that have been 

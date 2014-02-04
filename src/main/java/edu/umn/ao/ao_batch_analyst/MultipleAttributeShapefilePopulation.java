@@ -24,9 +24,7 @@ import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 
-import BasicPopulation;
-
-public class MultipleAttributeShapefilePopulation extends BasicPopulation {
+public class MultipleAttributeShapefilePopulation extends MultipleAttributeBasicPopulation {
 
 	private static final Logger LOG = LoggerFactory.getLogger(ShapefilePopulation.class);
 	
