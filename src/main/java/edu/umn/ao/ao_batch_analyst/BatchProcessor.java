@@ -33,13 +33,13 @@ public class BatchProcessor {
 	@Setter private GraphService graphService;
 	@Setter private SPTService sptService;
 	@Setter private SampleFactory sampleFactory;
-	@Setter private RoutingRequestFactory routingRequestFactory;
+	@Setter private IndividualRoutingRequestGenerator routingRequestFactory;
 	@Setter private Population origins;
 	@Setter private Population destinations;
 	@Setter private AOAggregator aggregator;
 	@Setter private int nThreads = Runtime.getRuntime().availableProcessors();
 	
-	public BatchProcessor(GraphService graphService, Population origins, Population destinations, RoutingRequestFactory routingRequestFactory) {
+	public BatchProcessor(GraphService graphService, Population origins, Population destinations, IndividualRoutingRequestGenerator routingRequestFactory) {
 		this.graphService = graphService;
 		this.origins = origins;
 		this.destinations = destinations;
@@ -62,5 +62,18 @@ public class BatchProcessor {
 		LOG.info("Number of threads: {}", nThreads);
 		ExecutorService threadPool = Executors.newFixedThreadPool(nThreads);
 		CompletionService<Void> ecs = new ExecutorCompletionService<Void>(threadPool);
+	}
+	
+	private class BatchAnalystTask implements Runnable {
+		
+		protected final IndividualRoutingRequest req;
+		
+		public BatchAnalystTask(IndividualRoutingRequest req) {
+			this.req = req;
+		}
+		
+		public void run() {
+			
+		}
 	}
 }
