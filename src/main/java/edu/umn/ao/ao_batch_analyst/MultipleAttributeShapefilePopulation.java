@@ -1,7 +1,9 @@
 package edu.umn.ao.ao_batch_analyst;
 
 import java.io.File;
+import java.util.List;
 
+import lombok.Getter;
 import lombok.Setter;
 
 import org.geotools.data.FileDataStore;
@@ -13,6 +15,7 @@ import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.referencing.CRS;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opentripplanner.analyst.batch.ShapefilePopulation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,18 +24,31 @@ import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 
-public class ShapefilePopulation extends BasicPopulation{
-    private static final Logger LOG = LoggerFactory.getLogger(ShapefilePopulation.class);
+import BasicPopulation;
 
-    @Setter String labelAttribute;
+public class MultipleAttributeShapefilePopulation extends BasicPopulation {
 
-    @Setter String inputAttribute;
-    
-    @Override
-    public void createIndividuals() {
+	private static final Logger LOG = LoggerFactory.getLogger(ShapefilePopulation.class);
+	
+	@Setter @Getter String labelAttribute;
+	@Setter @Getter List<String> valueAttributes;
+	
+	public MultipleAttributeShapefilePopulation() {
+		
+	}
+	
+	public MultipleAttributeShapefilePopulation(String sourceFilename, String labelAttribute, List<String> valueAttributes) {
+		this.sourceFilename = sourceFilename;
+		this.labelAttribute = labelAttribute;
+		this.valueAttributes = valueAttributes;
+		this.createIndividuals();
+	}
+	
+	@Override
+	public void createIndividuals() {
         String filename = this.sourceFilename;
         LOG.debug("Loading population from shapefile {}", filename);
-        LOG.debug("Feature attributes: input data in {}, labeled with {}", inputAttribute, labelAttribute);
+        LOG.debug("Feature attributes: values in {}, labeled with {}", valueAttributes, labelAttribute);
         try {
             File file = new File(filename);
             FileDataStore store = FileDataStoreFinder.getDataStore(file);
@@ -67,17 +83,21 @@ public class ShapefilePopulation extends BasicPopulation{
                 } else {
                     label = feature.getAttribute(labelAttribute).toString();
                 }
-                double input = 0.0;
-                if (inputAttribute != null) {
-                	try {
-	                    Number n = (Number) feature.getAttribute(inputAttribute);
-	                    input = n.doubleValue();
-                	} catch (NullPointerException e) {
-                		LOG.debug("Null input value for individual {}, defaulting to 0.0", label);
-                		input = 0.0;
-                	}
+                
+                double [] values = new double[valueAttributes.size()];
+                if (valueAttributes != null) {
+	                for (int v=0; v < valueAttributes.size(); v++) {
+	                	try {
+	                		Number n = (Number) feature.getAttribute(valueAttributes.get(v));
+	                		values[v] = n.doubleValue();
+	                	} catch (NullPointerException e) {
+	                		LOG.debug("Null value for individual {} attribute {}, defaulting to 0.0", label, valueAttributes.get(v));
+	                		values[v] = 0.0;
+	                	}
+	                }
                 }
-                Individual individual = new Individual(label, point.getX(), point.getY(), input);
+                
+                MultipleAttributeIndividual individual = new MultipleAttributeIndividual(i, label, point.getX(), point.getY(), values);
                 this.addIndividual(individual);
                 i += 1;
             }
@@ -88,5 +108,7 @@ public class ShapefilePopulation extends BasicPopulation{
             throw new RuntimeException(ex);
         }
         LOG.debug("Done loading shapefile.");
-    }
+	}
+
 }
+

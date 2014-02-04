@@ -2,17 +2,21 @@ package edu.umn.ao.ao_batch_analyst;
 
 import java.util.List;
 
-public interface Population extends Iterable<Individual>{
+import org.opentripplanner.analyst.batch.Individual;
+import org.opentripplanner.analyst.batch.MultipleResultSet;
+import org.opentripplanner.analyst.batch.ResultSet;
+
+public interface MultipleAttributePopulation {
 
     /** 
      * @return a list of all Individuals in this Population, including those that have been 
      * marked as rejected by the filter chain.
      */
-    public List<Individual> getIndividuals();
+    public List<MultipleAttributeIndividual> getIndividuals();
 
-    public void addIndividual(Individual individual);
+    public void addIndividual(MultipleAttributeIndividual individual);
 
-    public void clearIndividuals(List<Individual> individuals);
+    public void clearIndividuals(List<MultipleAttributeIndividual> individuals);
 
     /** @return the number of individuals in this population. */
     public int size();
@@ -31,12 +35,5 @@ public interface Population extends Iterable<Individual>{
      */
     public void createIndividuals();
 
-    /**
-     * Save the output data in this population to a file, using a format that is appropriate for the 
-     * specific class of population. For example, a population loaded from an image file or 
-     * generated on a regular grid will be saved as a Geotiff raster. A population of points that 
-     * are not known to be aligned on a regular grid in some CRS will be saved as a CSV file.
-     */
-    public void writeAppropriateFormat(String fileName, ResultSet results);
-    
 }
+
