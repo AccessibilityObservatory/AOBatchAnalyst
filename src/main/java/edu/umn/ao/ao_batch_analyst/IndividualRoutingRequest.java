@@ -5,7 +5,7 @@ import org.opentripplanner.common.model.GenericLocation;
 import org.opentripplanner.routing.core.RoutingRequest;
 
 public class IndividualRoutingRequest extends RoutingRequest {
-
+	
 	public Individual originIndividual = null;
 	
 	public void setOriginIndividual(Individual i) {
@@ -15,11 +15,11 @@ public class IndividualRoutingRequest extends RoutingRequest {
 	}
 	
 	public IndividualRoutingRequest clone() {
-		IndividualRoutingRequest clone = (IndividualRoutingRequest) super.clone();
+		IndividualRoutingRequest newReq = (IndividualRoutingRequest) super.clone();
 		if (originIndividual != null) {
-			clone.setOriginIndividual(originIndividual);
+			newReq.setOriginIndividual(originIndividual);
 		}
-		return clone;
+		return newReq;
 	}
 
 }

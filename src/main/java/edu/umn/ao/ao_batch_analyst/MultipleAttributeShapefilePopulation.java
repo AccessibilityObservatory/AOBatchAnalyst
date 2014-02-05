@@ -1,6 +1,7 @@
 package edu.umn.ao.ao_batch_analyst;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import lombok.Getter;
@@ -38,8 +39,8 @@ public class MultipleAttributeShapefilePopulation extends MultipleAttributeBasic
 	public MultipleAttributeShapefilePopulation(String sourceFilename, String labelAttribute, List<String> valueAttributes) {
 		this.sourceFilename = sourceFilename;
 		this.labelAttribute = labelAttribute;
-		this.valueAttributes = valueAttributes;
-		this.createIndividuals();
+		this.valueAttributes = valueAttributes = new ArrayList<String>();
+		this.setup();
 	}
 	
 	@Override

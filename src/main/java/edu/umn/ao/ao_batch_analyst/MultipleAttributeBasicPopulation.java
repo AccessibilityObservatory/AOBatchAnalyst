@@ -19,6 +19,12 @@ public class MultipleAttributeBasicPopulation implements MultipleAttributePopula
 
     private static final Logger LOG = LoggerFactory.getLogger(MultipleAttributeBasicPopulation.class);
     
+    @Setter @Getter
+    public String labelAttribute;
+    
+    @Setter @Getter
+    public List<String> valueAttributes;
+    
     @Setter 
     public String sourceFilename;
     
@@ -63,6 +69,7 @@ public class MultipleAttributeBasicPopulation implements MultipleAttributePopula
     public void setup() {
         // call the subclass-specific file loading method
         this.createIndividuals();
+        this.skip = new boolean[individuals.size()];
     }
 
     class PopulationIterator implements Iterator<MultipleAttributeIndividual> {

@@ -6,7 +6,6 @@ import java.util.Date;
 import java.util.List;
 import java.text.SimpleDateFormat;
 
-import org.opentripplanner.analyst.batch.ShapefilePopulation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,17 +13,17 @@ import com.csvreader.CsvWriter;
 
 public class AOAggregator {
 	
-	private static final Logger LOG = LoggerFactory.getLogger(ShapefilePopulation.class);
+	private static final Logger LOG = LoggerFactory.getLogger(AOAggregator.class);
 	
-	private final MultipleAttributeShapefilePopulation origins;
-	private final MultipleAttributeShapefilePopulation destinations;
+	private final MultipleAttributePopulation origins;
+	private final MultipleAttributePopulation destinations;
 	private final String labelAttribute;
 	private final List<String> valueAttributes;
 	private final List<Date> depTimes;
 	private final List<Integer> thresholds;
 	private double [][][][] aggregateResults;
 	
-	public AOAggregator(MultipleAttributeShapefilePopulation origins, MultipleAttributeShapefilePopulation destinations, List<Integer> thresholds, List<Date> depTimes) {
+	public AOAggregator(MultipleAttributePopulation origins, MultipleAttributePopulation destinations, List<Integer> thresholds, List<Date> depTimes) {
 		this.origins = origins;
 		this.destinations = destinations;
 		this.thresholds = thresholds;
@@ -35,7 +34,7 @@ public class AOAggregator {
 	}
 	
 	public void computeAggregate(MultipleAttributeIndividual origin, Date depTime, ResultSet travelTimes) {
-		computeAggregate(origins.individuals.indexOf(origin), depTimes.indexOf(depTime), travelTimes);
+		computeAggregate(origins.getIndividuals().indexOf(origin), depTimes.indexOf(depTime), travelTimes);
 	}
 	
 	public void computeAggregate(int originI, int deptimeI, ResultSet travelTimes) {
@@ -59,7 +58,7 @@ public class AOAggregator {
 	}
 	
     public void writeCVS(String outFileName) {
-        LOG.debug("Writing aggregate results to CSV: {}", outFileName);
+        LOG.info("Writing aggregate results to CSV: {}", outFileName);
         
         int rowSize = 3 + valueAttributes.size();
         
@@ -93,6 +92,7 @@ public class AOAggregator {
             		}
             	}
             }
+            writer.close();
         } catch (Exception e) {
             LOG.error("Error while writing to CSV file: {}", e.getMessage());
             return;

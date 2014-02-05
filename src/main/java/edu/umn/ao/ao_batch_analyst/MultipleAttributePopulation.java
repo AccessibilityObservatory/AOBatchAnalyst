@@ -34,6 +34,11 @@ public interface MultipleAttributePopulation extends Iterable<MultipleAttributeI
      * since sampling will be carried out after the filter chain is applied.
      */
     public void createIndividuals();
+    
+    public String getLabelAttribute();
+    
+    public List<String> getValueAttributes();
+    
 
 }
 

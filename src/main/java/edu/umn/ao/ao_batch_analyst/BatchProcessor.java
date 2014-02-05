@@ -1,7 +1,9 @@
 package edu.umn.ao.ao_batch_analyst;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Date;
+import java.util.Collections;
 import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorCompletionService;
@@ -31,9 +33,11 @@ public class BatchProcessor {
 	@Setter private MultipleAttributePopulation destinations;
 	@Setter private AOAggregator aggregator;
 	@Setter private int nThreads = Runtime.getRuntime().availableProcessors();
-	@Setter private List<Date> depTimes;
+	@Setter private List<Integer> thresholds = new ArrayList<Integer>();
+	@Setter private int cutoffSeconds = -1;
+	@Setter private List<Date> depTimes = new ArrayList<Date>();
 	@Setter private int logThrottleSeconds = 4;
-	@Setter private String outputFileName;
+	@Setter private String outputFileName = "test.csv";
 	
 	private long startTime = -1;
 	private long lastLogTime = 0;
@@ -51,10 +55,12 @@ public class BatchProcessor {
 		sampleFactory = new SampleFactory();
 		GeometryIndex gi = new GeometryIndex();
 		gi.setGraphService(graphService);
+		gi.initialzeComponent();
 		sampleFactory.setIndex(gi);
+		aggregator = new AOAggregator(origins, destinations, thresholds, depTimes);
 	}
 	
-	private void run() {
+	public void run() {
 		linkIntoGraph(destinations);
 		
 		LOG.info("Number of threads: {}", nThreads);
@@ -127,15 +133,17 @@ public class BatchProcessor {
 		public BatchAnalystTask(MultipleAttributeIndividual origin, Date depTime) {
 			this.origin = origin;
 			this.depTime = depTime;
-			this.req = routingRequestFactory.getIndividualRoutingRequest((depTime.getTime()/1000), origin);
+			this.req = routingRequestFactory.getIndividualRoutingRequest(depTime, origin, Collections.max(thresholds));
 		}
 		
 		public void run() {
-			ShortestPathTree spt = sptService.getShortestPathTree(req);
-			ResultSet travelTimes = ResultSet.forTravelTimes(destinations, spt);
-			req.cleanup();
-			
-			aggregator.computeAggregate(origin, depTime, travelTimes);
+			if (req != null) {
+				ShortestPathTree spt = sptService.getShortestPathTree(req);
+				ResultSet travelTimes = ResultSet.forTravelTimes(destinations, spt);
+				req.cleanup();
+				
+				aggregator.computeAggregate(origin, depTime, travelTimes);
+			}
 		}
 	}
 }
