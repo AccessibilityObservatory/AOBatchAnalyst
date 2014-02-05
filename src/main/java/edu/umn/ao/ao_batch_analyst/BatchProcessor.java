@@ -47,7 +47,6 @@ public class BatchProcessor {
 		this.origins = origins;
 		this.destinations = destinations;
 		this.routingRequestFactory = routingRequestFactory;
-		this.setup();
 	}
 	
 	private void setup() {
@@ -61,6 +60,7 @@ public class BatchProcessor {
 	}
 	
 	public void run() {
+		setup();
 		linkIntoGraph(destinations);
 		
 		LOG.info("Number of threads: {}", nThreads);
@@ -133,7 +133,7 @@ public class BatchProcessor {
 		public BatchAnalystTask(MultipleAttributeIndividual origin, Date depTime) {
 			this.origin = origin;
 			this.depTime = depTime;
-			this.req = routingRequestFactory.getIndividualRoutingRequest(depTime, origin, Collections.max(thresholds));
+			this.req = routingRequestFactory.getIndividualRoutingRequest(depTime, origin, Collections.max(thresholds)+1);
 		}
 		
 		public void run() {

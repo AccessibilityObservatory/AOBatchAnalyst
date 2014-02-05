@@ -70,7 +70,7 @@ public class AOAggregator {
         	row[v+3] = valueAttributes.get(v);
         }
         
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmm");
         
         try {
             CsvWriter writer = new CsvWriter(outFileName, ',', Charset.forName("UTF8"));
@@ -97,6 +97,6 @@ public class AOAggregator {
             LOG.error("Error while writing to CSV file: {}", e.getMessage());
             return;
         }
-        LOG.debug("Done writing population to CSV at {}.", outFileName);
+        LOG.info("Done writing population to CSV: {}.", outFileName);
     }
 }

@@ -7,7 +7,7 @@ import org.opentripplanner.routing.core.TraverseModeSet
 import org.opentripplanner.routing.impl.GraphServiceImpl
 import java.util.GregorianCalendar
 
-val originFilename = "/Users/owenx148/Desktop/temp/33460-27053-20140122/test.shp"
+val originFilename = "/Users/owenx148/Desktop/temp/33460-27053-20140122/origins.shp"
 val destinationFilename = "/Users/owenx148/Desktop/temp/33460-27053-20140122/destinations.shp"
 val label = "GEOID10"
 val originValueAttributes = List()
@@ -40,11 +40,11 @@ protoReq.setBatch(true)
 
 val reqFactory = new IndividualRoutingRequestFactory(gs, protoReq)
 
-val dates = List(new GregorianCalendar(2014, 1, 22, 8, 0).getTime())
-val thresholds = List(300,600) 
+val dates = List(new GregorianCalendar(2014, 1, 22, 8, 0).getTime(), new GregorianCalendar(2014, 1, 22, 8, 1).getTime(), new GregorianCalendar(2014, 1, 22, 8, 2).getTime())
+val thresholds = List(300,600,900,1200,1500,1800,2100,2400,2700,3000,3300,3600,3900,4200,4500,4800,5100,5400) 
 implicit def toIntegerList( lst: List[Int] ) = seqAsJavaList( lst.map( i => i:java.lang.Integer ) )
 
 val bp = new BatchProcessor(gs, origins, destinations, reqFactory)
 bp.setDepTimes(dates)
-bp.setThresholds(List(300,600))
+bp.setThresholds(thresholds)
 bp.run()

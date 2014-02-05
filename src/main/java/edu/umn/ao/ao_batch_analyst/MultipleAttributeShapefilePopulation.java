@@ -39,7 +39,7 @@ public class MultipleAttributeShapefilePopulation extends MultipleAttributeBasic
 	public MultipleAttributeShapefilePopulation(String sourceFilename, String labelAttribute, List<String> valueAttributes) {
 		this.sourceFilename = sourceFilename;
 		this.labelAttribute = labelAttribute;
-		this.valueAttributes = valueAttributes = new ArrayList<String>();
+		this.valueAttributes = valueAttributes;
 		this.setup();
 	}
 	
