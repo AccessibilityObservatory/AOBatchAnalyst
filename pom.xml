@@ -22,14 +22,15 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-    	<groupId>org.opentripplanner</groupId>
-    	<artifactId>opentripplanner-analyst</artifactId>
-    	<version>0.9.2-SNAPSHOT</version>
-    </dependency>
-    <dependency>
     	<groupId>org.projectlombok</groupId>
     	<artifactId>lombok</artifactId>
     	<version>0.11.8</version>
+    </dependency>
+    <dependency>
+    	<groupId>org.opentripplanner</groupId>
+    	<artifactId>opentripplanner-analyst</artifactId>
+    	<version>0.9.2-SNAPSHOT</version>
+    	<scope>provided</scope>
     </dependency>
   </dependencies>
       <build>
@@ -50,14 +51,15 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-shade-plugin</artifactId>
+          <version>1.7.1</version>
           <executions>
             <execution>
               <phase>package</phase>
               <goals>
                 <goal>shade</goal>
               </goals>
-              <configuration>
-                <finalName>ao-otp-analyst</finalName> <!-- the shaded jar file's name --> 
+              <!-- <configuration>
+                  <finalName>ao-otp-analyst</finalName> 
                 <transformers>
                   <transformer
                     implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
@@ -69,12 +71,8 @@
                   </transformer>
                   <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
                   <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                    <!-- JAI-ImageIO will throw an IllegalArgumentException complaining that 
-                         vendorName == null because it depends on information from the manifest.
-                         This information is clobbered by the shading process and must be re-added.
-                         See: http://www.java.net/node/695773 -->
                     <manifestEntries>
-                        <Main-Class>org.opentripplanner.analyst.batch.BatchProcessor</Main-Class>
+                        <Main-Class>edu.umn.ao.ao_batch_analyst.BatchProcessor</Main-Class>
                         <Specification-Title>Java Advanced Imaging Image I/O Tools</Specification-Title>
                         <Specification-Version>1.1</Specification-Version>
                         <Specification-Vendor>Sun Microsystems, Inc.</Specification-Vendor>
@@ -86,7 +84,7 @@
                   </transformer>
                 </transformers>
                 <shadedArtifactAttached>true</shadedArtifactAttached>
-              </configuration>
+              </configuration> -->
             </execution>
           </executions>
         </plugin>
