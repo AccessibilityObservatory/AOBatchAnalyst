@@ -15,9 +15,6 @@ import lombok.Setter;
 import org.opentripplanner.analyst.core.Sample;
 import org.opentripplanner.analyst.core.GeometryIndex;
 import org.opentripplanner.analyst.request.SampleFactory;
-import org.opentripplanner.analyst.batch.Individual;
-import org.opentripplanner.analyst.batch.Population;
-import org.opentripplanner.analyst.batch.ResultSet;
 import org.opentripplanner.common.model.GenericLocation;
 import org.opentripplanner.routing.core.TraverseMode;
 import org.opentripplanner.routing.error.TransitTimesException;
@@ -37,17 +34,18 @@ public class BatchProcessor {
 	@Setter private SPTService sptService;
 	@Setter private SampleFactory sampleFactory;
 	@Setter private IndividualRoutingRequestFactory routingRequestFactory;
-	@Setter private Population origins;
-	@Setter private Population destinations;
+	@Setter private MultipleAttributePopulation origins;
+	@Setter private MultipleAttributePopulation destinations;
 	@Setter private AOAggregator aggregator;
 	@Setter private int nThreads = Runtime.getRuntime().availableProcessors();
 	@Setter private List<Date> depTimes;
 	@Setter private int logThrottleSeconds = 4;
+	@Setter private String outputFileName;
 	
 	private long startTime = -1;
 	private long lastLogTime = 0;
 	
-	public BatchProcessor(GraphService graphService, Population origins, Population destinations, IndividualRoutingRequestFactory routingRequestFactory) {
+	public BatchProcessor(GraphService graphService, MultipleAttributePopulation origins, MultipleAttributePopulation destinations, IndividualRoutingRequestFactory routingRequestFactory) {
 		this.graphService = graphService;
 		this.origins = origins;
 		this.destinations = destinations;
@@ -72,7 +70,7 @@ public class BatchProcessor {
 		
 		startTime = System.currentTimeMillis();
 		int nTasks = 0;
-		for (Individual oi : origins) {
+		for (MultipleAttributeIndividual oi : origins) {
 			for (Date depTime : depTimes) {
 				ecs.submit(new BatchAnalystTask(oi, depTime), null);
 				LOG.debug("Submitted task for origin {}, departure time {}", oi.label, depTime.toString());
@@ -97,6 +95,8 @@ public class BatchProcessor {
 		}
 		threadPool.shutdown();
 		
+		aggregator.writeCVS(outputFileName);
+		
 		LOG.info("Done.");
 	}
 
@@ -112,11 +112,11 @@ public class BatchProcessor {
         }
     }
 	
-	private void linkIntoGraph(Population p) {
+	private void linkIntoGraph(MultipleAttributePopulation p) {
 		LOG.info("Linking population {} to the graph...", p);
 		int n = 0;
 		int nonNull = 0;
-		for (Individual i : p) {
+		for (MultipleAttributeIndividual i : p) {
 			i.sample = sampleFactory.getSample(i.lon, i.lat);
 			n++;
 			if (i.sample != null)
@@ -127,9 +127,13 @@ public class BatchProcessor {
 	
 	private class BatchAnalystTask implements Runnable {
 		
+		private final MultipleAttributeIndividual origin;
+		private final Date depTime;
 		protected final IndividualRoutingRequest req;
 		
-		public BatchAnalystTask(Individual origin, Date depTime) {
+		public BatchAnalystTask(MultipleAttributeIndividual origin, Date depTime) {
+			this.origin = origin;
+			this.depTime = depTime;
 			this.req = routingRequestFactory.getIndividualRoutingRequest((depTime.getTime()/1000), origin);
 		}
 		
@@ -138,7 +142,7 @@ public class BatchProcessor {
 			ResultSet travelTimes = ResultSet.forTravelTimes(destinations, spt);
 			req.cleanup();
 			
-			aggregator.computeAggregate();
+			aggregator.computeAggregate(origin, depTime, travelTimes);
 		}
 	}
 }
