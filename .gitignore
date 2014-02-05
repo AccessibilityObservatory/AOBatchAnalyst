@@ -6,3 +6,5 @@
 *.ear
 /target
 dependency-reduced-pom.xml
+test
+test.csv
