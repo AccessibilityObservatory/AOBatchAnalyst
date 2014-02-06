@@ -1,14 +1,15 @@
 package edu.umn.ao.ao_batch_analyst;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Date;
-import java.util.Collections;
 import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.text.DecimalFormat;
 
 import lombok.Setter;
 
@@ -18,38 +19,44 @@ import org.opentripplanner.routing.services.GraphService;
 import org.opentripplanner.routing.services.SPTService;
 import org.opentripplanner.routing.algorithm.EarliestArrivalSPTService;
 import org.opentripplanner.routing.spt.ShortestPathTree;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BatchProcessor {
+import javax.annotation.Resource;
 
-	private static final Logger LOG = LoggerFactory.getLogger(BatchProcessor.class);
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
+import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.core.io.FileSystemResource;
+
+public class AOBatchProcessor {
+
+	private static final Logger LOG = LoggerFactory.getLogger(AOBatchProcessor.class);
 	
-	@Setter private GraphService graphService;
-	@Setter private SPTService sptService;
-	@Setter private SampleFactory sampleFactory;
-	@Setter private IndividualRoutingRequestFactory routingRequestFactory;
-	@Setter private MultipleAttributePopulation origins;
-	@Setter private MultipleAttributePopulation destinations;
-	@Setter private AOAggregator aggregator;
+	@Autowired @Setter private GraphService graphService;
+	@Autowired @Setter private SPTService sptService;
+	@Autowired @Setter private SampleFactory sampleFactory;
+	@Autowired @Setter private IndividualRoutingRequestFactory routingRequestFactory;
+	@Autowired @Setter private AOAggregator aggregator;
+	@Autowired @Setter private DepartureTimeListGenerator depTimeGenerator;
+	
+	@Resource @Setter private MultipleAttributePopulation origins;
+	@Resource @Setter private MultipleAttributePopulation destinations;
+	
+	
 	@Setter private int nThreads = Runtime.getRuntime().availableProcessors();
-	@Setter private List<Integer> thresholds = new ArrayList<Integer>();
+	@Setter private int [] thresholds = {300};
 	@Setter private int cutoffSeconds = -1;
 	@Setter private List<Date> depTimes = new ArrayList<Date>();
-	@Setter private int logThrottleSeconds = 4;
-	@Setter private String outputFileName = "test.csv";
+	@Setter private int logThrottleSeconds = 10;
+	@Setter private String outputPath = "test.csv";
 	
 	private long startTime = -1;
 	private long lastLogTime = 0;
+	private DecimalFormat pctFormat = new DecimalFormat("###.##");
 	
-	public BatchProcessor(GraphService graphService, MultipleAttributePopulation origins, MultipleAttributePopulation destinations, IndividualRoutingRequestFactory routingRequestFactory) {
-		this.graphService = graphService;
-		this.origins = origins;
-		this.destinations = destinations;
-		this.routingRequestFactory = routingRequestFactory;
-	}
-	
-	private void setup() {
+	public void setup() {
 		sptService = new EarliestArrivalSPTService();
 		sampleFactory = new SampleFactory();
 		GeometryIndex gi = new GeometryIndex();
@@ -59,8 +66,31 @@ public class BatchProcessor {
 		aggregator = new AOAggregator(origins, destinations, thresholds, depTimes);
 	}
 	
+    public static void main(String[] args) throws IOException {
+        org.springframework.core.io.Resource appContextResource;
+        if( args.length == 0) {
+            LOG.error("no configuration XML file specified");
+            return;
+        } else {
+            String configFile = args[0];
+            appContextResource = new FileSystemResource(configFile);
+        }
+        GenericApplicationContext ctx = new GenericApplicationContext();
+        XmlBeanDefinitionReader xmlReader = new XmlBeanDefinitionReader(ctx);
+        xmlReader.loadBeanDefinitions(appContextResource);
+        ctx.refresh();
+        ctx.registerShutdownHook();
+        AOBatchProcessor processor = ctx.getBean(AOBatchProcessor.class);
+        if (processor == null)
+            LOG.error("No BatchProcessor bean was defined.");
+        else
+            processor.run();
+    }
+	
 	public void run() {
-		setup();
+		// TODO: assumes that threshold array is sorted
+		cutoffSeconds = aggregator.getThresholds()[aggregator.getThresholds().length-1] + 1;
+		LOG.info("Cutoff is now {}", cutoffSeconds);
 		linkIntoGraph(destinations);
 		
 		LOG.info("Number of threads: {}", nThreads);
@@ -70,7 +100,7 @@ public class BatchProcessor {
 		startTime = System.currentTimeMillis();
 		int nTasks = 0;
 		for (MultipleAttributeIndividual oi : origins) {
-			for (Date depTime : depTimes) {
+			for (Date depTime : depTimeGenerator.getDepartureTimes()) {
 				ecs.submit(new BatchAnalystTask(oi, depTime), null);
 				LOG.debug("Submitted task for origin {}, departure time {}", oi.label, depTime.toString());
 				++nTasks;
@@ -94,7 +124,7 @@ public class BatchProcessor {
 		}
 		threadPool.shutdown();
 		
-		aggregator.writeCVS(outputFileName);
+		aggregator.writeCVS(outputPath);
 		
 		LOG.info("Done.");
 	}
@@ -108,6 +138,9 @@ public class BatchProcessor {
             double projectedMin = (total - current) * (runTimeMin / current);
             LOG.info("Received {} results out of {}", current, total);
             LOG.info("Running {} min, {} min remaining (projected)", (int)runTimeMin, (int)projectedMin);
+            long totalMem = Runtime.getRuntime().totalMemory() / 1048576;
+            long maxMem = Runtime.getRuntime().maxMemory() / 1048576;
+            LOG.info("Memory usage: {}MiB out of {}MiB ({} %)", totalMem, maxMem, pctFormat.format(totalMem * 100.0 / maxMem));
         }
     }
 	
@@ -133,7 +166,7 @@ public class BatchProcessor {
 		public BatchAnalystTask(MultipleAttributeIndividual origin, Date depTime) {
 			this.origin = origin;
 			this.depTime = depTime;
-			this.req = routingRequestFactory.getIndividualRoutingRequest(depTime, origin, Collections.max(thresholds)+1);
+			this.req = routingRequestFactory.getIndividualRoutingRequest(origin, depTime, cutoffSeconds);
 		}
 		
 		public void run() {

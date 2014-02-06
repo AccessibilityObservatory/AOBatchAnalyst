@@ -2,10 +2,6 @@ package edu.umn.ao.ao_batch_analyst;
 
 import java.util.List;
 
-import org.opentripplanner.analyst.batch.Individual;
-import org.opentripplanner.analyst.batch.MultipleResultSet;
-import org.opentripplanner.analyst.batch.ResultSet;
-
 public interface MultipleAttributePopulation extends Iterable<MultipleAttributeIndividual>{
 
     /** 
@@ -37,7 +33,7 @@ public interface MultipleAttributePopulation extends Iterable<MultipleAttributeI
     
     public String getLabelAttribute();
     
-    public List<String> getValueAttributes();
+    public String [] getValueAttributes();
     
 
 }

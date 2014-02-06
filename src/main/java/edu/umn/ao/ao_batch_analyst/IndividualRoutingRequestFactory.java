@@ -1,42 +1,42 @@
 package edu.umn.ao.ao_batch_analyst;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
 import java.util.Date;
-import java.util.Iterator;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.opentripplanner.analyst.batch.Individual;
-import org.opentripplanner.routing.core.RoutingRequest;
-import org.opentripplanner.routing.core.TraverseModeSet;
 import org.opentripplanner.routing.services.GraphService;
-import org.opentripplanner.routing.error.TransitTimesException;
 import org.opentripplanner.routing.error.VertexNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import lombok.Getter;
 import lombok.Setter;
+
+import javax.annotation.Resource;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class IndividualRoutingRequestFactory {
 	
 	private static final Logger LOG = LoggerFactory.getLogger(IndividualRoutingRequest.class);
 	
-	private final GraphService graphService;
-	private final IndividualRoutingRequest protoReq;
+	@Autowired @Setter private GraphService graphService;
+	@Autowired @Setter private IndividualRoutingRequest prototypeRoutingRequest;
+	
+	@Resource @Setter private MultipleAttributePopulation origins;
 	
 	public IndividualRoutingRequestFactory(GraphService graphService, IndividualRoutingRequest protoReq) {
 		this.graphService = graphService;
-		this.protoReq = protoReq;		
+		this.prototypeRoutingRequest = protoReq;		
 	}
 	
-	public IndividualRoutingRequest getIndividualRoutingRequest(Date depTime, Individual origin) {
-		return getIndividualRoutingRequest(depTime, origin, -1);
+	public IndividualRoutingRequestFactory() {
+		
 	}
 	
-	public IndividualRoutingRequest getIndividualRoutingRequest(Date depTime, Individual origin, int cutoffSeconds) {
-		IndividualRoutingRequest newReq = protoReq.clone();
+	public IndividualRoutingRequest getIndividualRoutingRequest(Individual origin, Date depTime) {
+		return getIndividualRoutingRequest(origin, depTime, -1);
+	}
+	
+	public IndividualRoutingRequest getIndividualRoutingRequest(Individual origin, Date depTime, int cutoffSeconds) {
+		IndividualRoutingRequest newReq = prototypeRoutingRequest.clone();
 		
 		newReq.setDateTime(depTime);
 		if (cutoffSeconds > 0)

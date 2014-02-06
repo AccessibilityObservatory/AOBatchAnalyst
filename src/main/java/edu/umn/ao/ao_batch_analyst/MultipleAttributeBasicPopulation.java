@@ -15,6 +15,8 @@ import org.opentripplanner.analyst.batch.IndividualFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.PostConstruct;
+
 public class MultipleAttributeBasicPopulation implements MultipleAttributePopulation {
 
     private static final Logger LOG = LoggerFactory.getLogger(MultipleAttributeBasicPopulation.class);
@@ -23,7 +25,7 @@ public class MultipleAttributeBasicPopulation implements MultipleAttributePopula
     public String labelAttribute;
     
     @Setter @Getter
-    public List<String> valueAttributes;
+    public String [] valueAttributes;
     
     @Setter 
     public String sourceFilename;
@@ -66,6 +68,7 @@ public class MultipleAttributeBasicPopulation implements MultipleAttributePopula
         return this.individuals.size();
     }
 
+    @PostConstruct
     public void setup() {
         // call the subclass-specific file loading method
         this.createIndividuals();

@@ -6,6 +6,9 @@ import org.opentripplanner.routing.core.RoutingRequest;
 
 public class IndividualRoutingRequest extends RoutingRequest {
 	
+	// Use the default graph if one is not specified 
+	public String routerId = null;
+	
 	public Individual originIndividual = null;
 	
 	public void setOriginIndividual(Individual i) {

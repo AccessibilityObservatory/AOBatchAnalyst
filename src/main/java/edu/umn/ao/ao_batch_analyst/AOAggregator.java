@@ -11,26 +11,47 @@ import org.slf4j.LoggerFactory;
 
 import com.csvreader.CsvWriter;
 
+import lombok.Setter;
+import lombok.Getter;
+
+import javax.annotation.Resource;
+import javax.annotation.PostConstruct;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
 public class AOAggregator {
 	
 	private static final Logger LOG = LoggerFactory.getLogger(AOAggregator.class);
 	
-	private final MultipleAttributePopulation origins;
-	private final MultipleAttributePopulation destinations;
-	private final String labelAttribute;
-	private final List<String> valueAttributes;
-	private final List<Date> depTimes;
-	private final List<Integer> thresholds;
+	@Resource @Setter private MultipleAttributePopulation origins;
+	@Resource @Setter private MultipleAttributePopulation destinations;
+	
+	@Autowired @Setter private DepartureTimeListGenerator depTimeGenerator;
+	
+	@Setter @Getter private int [] thresholds;
+	
+	private String [] valueAttributes;
+	private List<Date> depTimes;
 	private double [][][][] aggregateResults;
 	
-	public AOAggregator(MultipleAttributePopulation origins, MultipleAttributePopulation destinations, List<Integer> thresholds, List<Date> depTimes) {
+	public AOAggregator() {
+		
+	}
+	
+	@PostConstruct
+	public void initializeComponent() {
+		valueAttributes = destinations.getValueAttributes();
+		depTimes = depTimeGenerator.getDepartureTimes();
+		this.aggregateResults = new double[origins.size()][depTimes.size()][thresholds.length][valueAttributes.length];
+	}
+	
+	public AOAggregator(MultipleAttributePopulation origins, MultipleAttributePopulation destinations, int [] thresholds, List<Date> depTimes) {
 		this.origins = origins;
 		this.destinations = destinations;
 		this.thresholds = thresholds;
 		this.depTimes = depTimes;
-		this.labelAttribute = origins.getLabelAttribute();
 		this.valueAttributes = destinations.getValueAttributes();
-		this.aggregateResults = new double[origins.size()][depTimes.size()][thresholds.size()][valueAttributes.size()];
+		this.aggregateResults = new double[origins.size()][depTimes.size()][thresholds.length][valueAttributes.length];
 	}
 	
 	public void computeAggregate(MultipleAttributeIndividual origin, Date depTime, ResultSet travelTimes) {
@@ -44,8 +65,9 @@ public class AOAggregator {
 			int threshI = 0;
 			for (Integer threshold : thresholds) {
 				if (time >= 0 && time <= threshold) {
-					for (int valI = 0; valI < valueAttributes.size(); valI++) {
-						aggregateResults[originI][deptimeI][threshI][valI] += target.values[valI];
+					int valI = 0;
+					for (double value : target.values) {
+						aggregateResults[originI][deptimeI][threshI][valI] += value;
 						valI++;
 					}
 				}
@@ -61,28 +83,24 @@ public class AOAggregator {
 	}
 	
 	public void setAggregate(int originI, int deptimeI, double aggregateValue) {
-		int threshI = 0;
-		for (Integer threshold : thresholds) {
-			int valI = 0;
-			for (String value : valueAttributes) {
+		for (int threshI = 0; threshI < thresholds.length; threshI++) {
+			for (int valI = 0; valI < valueAttributes.length; valI++) {
 				aggregateResults[originI][deptimeI][threshI][valI] = aggregateValue;
-				valI++;
 			}
-			threshI++;
 		}			
 	}
 	
     public void writeCVS(String outFileName) {
         LOG.info("Writing aggregate results to CSV: {}", outFileName);
         
-        int rowSize = 3 + valueAttributes.size();
+        int rowSize = 3 + valueAttributes.length;
         
         String [] row = new String[rowSize];
         row[0] = "label";
         row[1] = "deptime";
         row[2] = "threshold";
-        for (int v = 0; v < valueAttributes.size() ;v++) {
-        	row[v+3] = valueAttributes.get(v);
+        for (int v = 0; v < valueAttributes.length ;v++) {
+        	row[v+3] = valueAttributes[v];
         }
         
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmm");
@@ -97,10 +115,10 @@ public class AOAggregator {
             	for (int deptimeI=0; deptimeI < depTimes.size(); deptimeI++) {
             		row[1] = sdf.format(depTimes.get(deptimeI));
             		
-            		for (int threshI=0; threshI < thresholds.size(); threshI++) {
-            			row[2] = thresholds.get(threshI).toString();
+            		for (int threshI=0; threshI < thresholds.length; threshI++) {
+            			row[2] = Double.toString(thresholds[threshI]);
             			
-            			for (int valI = 0; valI < valueAttributes.size(); valI++) {
+            			for (int valI = 0; valI < valueAttributes.length; valI++) {
             				row[valI+3] = Double.toString(aggregateResults[originI][deptimeI][threshI][valI]);
             			}
             			writer.writeRecord(row);

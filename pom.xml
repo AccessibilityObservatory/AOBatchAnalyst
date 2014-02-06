@@ -138,7 +138,7 @@
                          This information is clobbered by the shading process and must be re-added.
                          See: http://www.java.net/node/695773 -->
                     <manifestEntries>
-                        <Main-Class>org.opentripplanner.analyst.batch.BatchProcessor</Main-Class>
+                        <Main-Class>edu.umn.ao.ao_batch_analyst.AOBatchProcessor</Main-Class>
                         <Specification-Title>Java Advanced Imaging Image I/O Tools</Specification-Title>
                         <Specification-Version>1.1</Specification-Version>
                         <Specification-Vendor>Sun Microsystems, Inc.</Specification-Vendor>

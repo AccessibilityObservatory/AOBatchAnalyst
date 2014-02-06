@@ -1,0 +1,71 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<BEANS:beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:BEANS="http://www.springframework.org/schema/beans" xmlns:CONTEXT="http://www.springframework.org/schema/context" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd           http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.0.xsd           http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.0.xsd           http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-2.0.xsd">
+  <CONTEXT:annotation-config/>
+  <BEANS:bean class="org.opentripplanner.analyst.request.SampleFactory">
+    <BEANS:property name="searchRadiusM" value="2000"/>
+  </BEANS:bean>
+
+  <BEANS:bean class="edu.umn.ao.ao_batch_analyst.MultipleAttributeShapefilePopulation" id="origins">
+    <BEANS:property name="labelAttribute" value="GEOID10"/>
+    <BEANS:property name="sourceFilename" value="/Users/owenx148/Desktop/temp/33460-27053-20140122/test.shp"/>
+  </BEANS:bean>
+  
+  <BEANS:bean class="edu.umn.ao.ao_batch_analyst.MultipleAttributeShapefilePopulation" id="destinations">
+    <BEANS:property name="labelAttribute" value="GEOID10"/>
+    <BEANS:property name="valueAttributes">
+      <BEANS:list>
+        <BEANS:value>JOBS2011</BEANS:value>
+        <BEANS:value>JOBS2011</BEANS:value>
+      </BEANS:list>
+    </BEANS:property>
+    <BEANS:property name="sourceFilename" value="/Users/owenx148/Desktop/temp/33460-27053-20140122/destinations.shp"/>
+  </BEANS:bean>
+
+  <BEANS:bean class="org.opentripplanner.routing.algorithm.EarliestArrivalSPTService"/>
+  
+  <BEANS:bean class="org.opentripplanner.analyst.core.GeometryIndex"/>
+  
+  <BEANS:bean class="org.opentripplanner.routing.impl.GraphServiceImpl" id="graphService">
+    <BEANS:property name="path" value="/Users/owenx148/Desktop/temp"/>
+    <BEANS:property name="defaultRouterId" value="33460-27053-20140122"/>
+  </BEANS:bean>
+
+  <BEANS:bean class="edu.umn.ao.ao_batch_analyst.DepartureTimeListGenerator" id="depTimeGenerator">
+    <BEANS:property name="firstDate" value="2014-01-22"/>
+    <BEANS:property name="firstTime" value="07:00 AM"/>
+    <BEANS:property name="lastDate" value="2014-01-22"/>
+    <BEANS:property name="lastTime" value="07:01 AM"/>
+    <BEANS:property name="timeZone" value="America/Chicago"/>
+  </BEANS:bean>
+
+  <BEANS:bean class="edu.umn.ao.ao_batch_analyst.IndividualRoutingRequest" id="prototypeRoutingRequest">
+    <BEANS:property name="batch" value="True"/>
+    <BEANS:property name="walkSpeed" value="1.388888"/>
+    <BEANS:property name="stairsReluctance" value="1.0"/>
+    <BEANS:property name="walkReluctance" value="1.0"/>
+    <BEANS:property name="waitReluctance" value="1.0"/>
+    <BEANS:property name="waitAtBeginningFactor" value="1.0"/>
+    <BEANS:property name="modes" value="WALK,TRANSIT"/>
+    <BEANS:property name="clampInitialWait" value="0"/>
+    <BEANS:property name="arriveBy" value="False"/>
+    <BEANS:property name="walkBoardCost" value="0"/>
+    <BEANS:property name="maxWalkDistance" value="10000"/>
+  </BEANS:bean>
+
+  <BEANS:bean class="edu.umn.ao.ao_batch_analyst.IndividualRoutingRequestFactory" id="routingRequestFactory"/>
+  
+  <BEANS:bean class="edu.umn.ao.ao_batch_analyst.AOAggregator" id="aggregator">
+	<BEANS:property name="thresholds">
+	  <BEANS:list>
+        <BEANS:value>600</BEANS:value>
+        <BEANS:value>1200</BEANS:value>
+        <BEANS:value>1800</BEANS:value>
+      </BEANS:list>
+	</BEANS:property>
+  </BEANS:bean>
+
+  <BEANS:bean class="edu.umn.ao.ao_batch_analyst.AOBatchProcessor" id="batchProcessor">
+    <BEANS:property name="outputPath" value="test.csv"/>
+  </BEANS:bean>
+
+</BEANS:beans>

@@ -30,13 +30,13 @@ public class MultipleAttributeShapefilePopulation extends MultipleAttributeBasic
 	private static final Logger LOG = LoggerFactory.getLogger(ShapefilePopulation.class);
 	
 	@Setter @Getter String labelAttribute;
-	@Setter @Getter List<String> valueAttributes;
+	@Setter @Getter String [] valueAttributes;
 	
 	public MultipleAttributeShapefilePopulation() {
 		
 	}
 	
-	public MultipleAttributeShapefilePopulation(String sourceFilename, String labelAttribute, List<String> valueAttributes) {
+	public MultipleAttributeShapefilePopulation(String sourceFilename, String labelAttribute, String [] valueAttributes) {
 		this.sourceFilename = sourceFilename;
 		this.labelAttribute = labelAttribute;
 		this.valueAttributes = valueAttributes;
@@ -46,8 +46,8 @@ public class MultipleAttributeShapefilePopulation extends MultipleAttributeBasic
 	@Override
 	public void createIndividuals() {
         String filename = this.sourceFilename;
-        LOG.debug("Loading population from shapefile {}", filename);
-        LOG.debug("Feature attributes: values in {}, labeled with {}", valueAttributes, labelAttribute);
+        LOG.info("Loading population from shapefile {}", filename);
+        LOG.info("Feature attributes: values in {}, labeled with {}", valueAttributes, labelAttribute);
         try {
             File file = new File(filename);
             FileDataStore store = FileDataStoreFinder.getDataStore(file);
@@ -83,14 +83,15 @@ public class MultipleAttributeShapefilePopulation extends MultipleAttributeBasic
                     label = feature.getAttribute(labelAttribute).toString();
                 }
                 
-                double [] values = new double[valueAttributes.size()];
+                double [] values = new double[0];
                 if (valueAttributes != null) {
-	                for (int v=0; v < valueAttributes.size(); v++) {
+                	values = new double[valueAttributes.length];
+	                for (int v=0; v < valueAttributes.length; v++) {
 	                	try {
-	                		Number n = (Number) feature.getAttribute(valueAttributes.get(v));
+	                		Number n = (Number) feature.getAttribute(valueAttributes[v]);
 	                		values[v] = n.doubleValue();
 	                	} catch (NullPointerException e) {
-	                		LOG.debug("Null value for individual {} attribute {}, defaulting to 0.0", label, valueAttributes.get(v));
+	                		LOG.debug("Null value for individual {} attribute {}, defaulting to 0.0", label, valueAttributes[v]);
 	                		values[v] = 0.0;
 	                	}
 	                }
