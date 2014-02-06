@@ -34,7 +34,7 @@ public class AOAggregator {
 	}
 	
 	public void computeAggregate(MultipleAttributeIndividual origin, Date depTime, ResultSet travelTimes) {
-		computeAggregate(origins.getIndividuals().indexOf(origin), depTimes.indexOf(depTime), travelTimes);
+		computeAggregate(origin.id, depTimes.indexOf(depTime), travelTimes);
 	}
 	
 	public void computeAggregate(int originI, int deptimeI, ResultSet travelTimes) {
@@ -44,8 +44,7 @@ public class AOAggregator {
 			int threshI = 0;
 			for (Integer threshold : thresholds) {
 				if (time >= 0 && time <= threshold) {
-					int valI = 0;
-					for (String value : valueAttributes) {
+					for (int valI = 0; valI < valueAttributes.size(); valI++) {
 						aggregateResults[originI][deptimeI][threshI][valI] += target.values[valI];
 						valI++;
 					}
@@ -55,6 +54,22 @@ public class AOAggregator {
 			destI ++;				
 		}
 		
+	}
+	
+	public void setAggregate(MultipleAttributeIndividual origin, Date depTime, double aggregateValue) {
+		setAggregate(origin.id, depTimes.indexOf(depTime), aggregateValue);
+	}
+	
+	public void setAggregate(int originI, int deptimeI, double aggregateValue) {
+		int threshI = 0;
+		for (Integer threshold : thresholds) {
+			int valI = 0;
+			for (String value : valueAttributes) {
+				aggregateResults[originI][deptimeI][threshI][valI] = aggregateValue;
+				valI++;
+			}
+			threshI++;
+		}			
 	}
 	
     public void writeCVS(String outFileName) {

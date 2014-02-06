@@ -143,6 +143,8 @@ public class BatchProcessor {
 				req.cleanup();
 				
 				aggregator.computeAggregate(origin, depTime, travelTimes);
+			} else {
+				aggregator.setAggregate(origin, depTime, -1);
 			}
 		}
 	}
