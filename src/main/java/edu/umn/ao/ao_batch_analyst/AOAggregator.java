@@ -104,6 +104,8 @@ public class AOAggregator {
         }
         
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmm");
+        // Make sure dates are printed in the same time zone that they were originally specified in
+        sdf.setTimeZone(depTimeGenerator.getTimeZone());
         
         try {
             CsvWriter writer = new CsvWriter(outFileName, ',', Charset.forName("UTF8"));

@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import org.opentripplanner.util.DateUtils;
 
 import lombok.Setter;
+import lombok.Getter;
 
 import javax.annotation.PostConstruct;
 
@@ -17,7 +18,7 @@ public class DepartureTimeListGenerator {
 	@Setter private String firstTime;
 	@Setter private String lastDate;
 	@Setter private String lastTime;
-	@Setter private TimeZone timeZone = TimeZone.getDefault();
+	@Setter @Getter private TimeZone timeZone = TimeZone.getDefault();
 	@Setter private int incrementMinutes = 1;
 	
 	private Date firstDepTime = new Date();
